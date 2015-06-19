@@ -16,18 +16,18 @@ func (g *gauss) draw() feature {
 }
 
 type embedding struct {
-	normals []Vector
+	normals []vector
 }
 
 func newEmbedding(d int, size int, r random) embedding {
-	normals := make([]Vector, d, d)
+	normals := make([]vector, d, d)
 	for i := 0; i < d; i++ {
 		normals[i] = normal(size, r)
 	}
 	return embedding{normals}
 }
 
-func normal(size int, r random) Vector {
+func normal(size int, r random) vector {
 	result := make([]feature, size, size)
 	for i := 0; i < size; i++ {
 		result[i] = r.draw()
@@ -36,7 +36,7 @@ func normal(size int, r random) Vector {
 }
 
 // returns an embedding of size d
-func (e *embedding) embed(vector Vector) string {
+func (e *embedding) embed(vector vector) string {
 	result := make([]bool, len(e.normals), len(e.normals))
 	for i, normal := range e.normals {
 		result[i] = dimension(vector, normal)
@@ -44,7 +44,7 @@ func (e *embedding) embed(vector Vector) string {
 	return bitToString(result)
 }
 
-func dimension(vecA Vector, vecB Vector) bool {
+func dimension(vecA vector, vecB vector) bool {
 	dot := dot(vecA, vecB)
 	if dot > 0 {
 		return true
