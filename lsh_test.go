@@ -8,7 +8,7 @@ import (
 
 var (
 	r       = newFakeRandom([]feature{1, 2, 3})
-	vectors = map[int]vector{
+	vectors = map[int]Vector{
 		10: []feature{-1.0, 0.0, 0.0},
 		20: []feature{0.0, 1.0, 0.0},
 		30: []feature{0.0, 0.0, 1.0},

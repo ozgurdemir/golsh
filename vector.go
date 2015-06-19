@@ -7,10 +7,11 @@ import (
 
 type feature float64
 
-type vector []feature
+// Vector defines a vector type
+type Vector []feature
 
 // cosine similarity between two vectors.
-func cosine(v1, v2 vector) (feature, error) {
+func cosine(v1, v2 Vector) (feature, error) {
 	if len(v1) != len(v2) {
 		return 0, fmt.Errorf("vectors do not have the same dimensions")
 	}
@@ -30,7 +31,7 @@ func cosine(v1, v2 vector) (feature, error) {
 	return similarity, nil
 }
 
-func dot(vecA vector, vecB vector) feature {
+func dot(vecA Vector, vecB Vector) feature {
 	var dot feature
 	for i := range vecA {
 		dot += vecA[i] * vecB[i]
