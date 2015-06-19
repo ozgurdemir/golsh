@@ -1,6 +1,9 @@
 package golsh
 
-import ()
+import (
+	"fmt"
+	"sort"
+)
 
 // Lsh creates a new Lsh object
 type Lsh struct {
@@ -10,12 +13,17 @@ type Lsh struct {
 }
 
 // NewLsh created a new Lsh object
-func NewLsh(vectors map[int]vector, numEmbeddings int, d int, size int) Lsh {
+func NewLsh(vectors map[int]vector, numEmbeddings int, d int) Lsh {
+	return newLsh(vectors, numEmbeddings, d, &gauss{})
+}
+
+func newLsh(vectors map[int]vector, numEmbeddings int, d int, r random) Lsh {
+	size := getSize(vectors)
 
 	// create global embeddings
-	embeddings := make([]embedding, d, d)
+	embeddings := make([]embedding, numEmbeddings, numEmbeddings)
 	for i := 0; i < numEmbeddings; i++ {
-		embeddings[i] = newEmbedding(d, size)
+		embeddings[i] = newEmbedding(d, size, r)
 	}
 
 	// embed input vectors
@@ -30,18 +38,26 @@ func NewLsh(vectors map[int]vector, numEmbeddings int, d int, size int) Lsh {
 	return Lsh{vectors, embeddings, hash}
 }
 
+func getSize(vectors map[int]vector) int {
+	for _, vector := range vectors {
+		return len(vector)
+	}
+	return 0
+}
+
 func (l *Lsh) vector(id int) vector {
 	return l.vectors[id]
 }
 
-func (l *Lsh) ann(vector vector, k int) []int {
+// Ann finds approximate nearest neughbour using LSH cosine
+func (l *Lsh) Ann(vector vector, k int) ([]int, error) {
 	candidates := l.candidates(vector)
-	return l.knn(vector, candidates, k)
+	nn, err := l.knn(vector, deduplicate(candidates), k)
+	return nn, err
 }
 
 func (l *Lsh) candidates(vec vector) []int {
-	// embed input vector
-	candidates := make([]int, 100)
+	candidates := make([]int, 0, 100)
 	for _, embedding := range l.embeddings {
 		h := embedding.embed(vec)
 		candidates = append(candidates, l.hash[h]...)
@@ -50,14 +66,54 @@ func (l *Lsh) candidates(vec vector) []int {
 	return candidates
 }
 
+func deduplicate(ids []int) []int {
+	hash := make(map[int]bool)
+	for _, id := range ids {
+		hash[id] = true
+	}
+
+	result := make([]int, 0, len(hash))
+	for id := range hash {
+		result = append(result, id)
+	}
+
+	return result
+}
+
 type hit struct {
 	id     int
 	vector vector
-	score  float64
+	score  feature
 }
 
-// hit scorer
+type byScore []hit
 
-func (l *Lsh) knn(vector vector, candidates []int, k int) []int {
-	return candidates
+func (a byScore) Len() int           { return len(a) }
+func (a byScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byScore) Less(i, j int) bool { return a[i].score > a[j].score }
+
+func (l *Lsh) knn(vector vector, candidates []int, k int) ([]int, error) {
+	hits := make([]hit, len(candidates), len(candidates))
+	for i, id := range candidates {
+		vec := l.vectors[id]
+		cosine, err := cosine(vector, vec)
+		if err != nil {
+			return []int{}, fmt.Errorf("error computing knn %q", err)
+		}
+
+		hits[i] = hit{id, vec, cosine}
+	}
+
+	sortHits(&hits)
+
+	result := make([]int, k, k)
+	for i := 0; i < k; i++ {
+		result[i] = hits[i].id
+	}
+
+	return result, nil
+}
+
+func sortHits(hits *[]hit) {
+	sort.Sort(byScore(*hits))
 }

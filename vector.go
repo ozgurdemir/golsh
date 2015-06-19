@@ -24,7 +24,7 @@ func cosine(v1, v2 vector) (feature, error) {
 
 	similarity := dot / feature(math.Sqrt(float64(sum1*sum2)))
 	if math.IsNaN(float64(similarity)) {
-		return 0, fmt.Errorf("NaN")
+		return 0, fmt.Errorf("NaN %v and %v", v1, v2)
 	}
 
 	return similarity, nil
