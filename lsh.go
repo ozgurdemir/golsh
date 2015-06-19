@@ -7,17 +7,17 @@ import (
 
 // Lsh creates a new Lsh object
 type Lsh struct {
-	vectors    map[int]Vector
+	vectors    *map[int]Vector
 	embeddings []embedding
 	hash       map[string][]int
 }
 
 // NewLsh created a new Lsh object
-func NewLsh(vectors map[int]Vector, numEmbeddings int, d int) Lsh {
+func NewLsh(vectors *map[int]Vector, numEmbeddings int, d int) Lsh {
 	return newLsh(vectors, numEmbeddings, d, &gauss{})
 }
 
-func newLsh(vectors map[int]Vector, numEmbeddings int, d int, r random) Lsh {
+func newLsh(vectors *map[int]Vector, numEmbeddings int, d int, r random) Lsh {
 	size := getSize(vectors)
 
 	// create global embeddings
@@ -28,7 +28,7 @@ func newLsh(vectors map[int]Vector, numEmbeddings int, d int, r random) Lsh {
 
 	// embed input vectors
 	hash := make(map[string][]int)
-	for id, vector := range vectors {
+	for id, vector := range *vectors {
 		for _, embedding := range embeddings {
 			h := embedding.embed(vector)
 			hash[h] = append(hash[h], id)
@@ -38,18 +38,20 @@ func newLsh(vectors map[int]Vector, numEmbeddings int, d int, r random) Lsh {
 	return Lsh{vectors, embeddings, hash}
 }
 
-func getSize(vectors map[int]Vector) int {
-	for _, vector := range vectors {
+func getSize(vectors *map[int]Vector) int {
+	for _, vector := range *vectors {
 		return len(vector)
 	}
 	return 0
 }
 
+// Vector fetches the vector for a given id
 func (l *Lsh) Vector(id int) (Vector, bool) {
-	vector, ok := l.vectors[id]
+	vector, ok := (*l.vectors)[id]
 	return vector, ok
 }
 
+// AnnVector returns the ann vectors
 func (l *Lsh) AnnVector(vector Vector, k int) ([]Vector, error) {
 	nn, err := l.Ann(vector, k)
 	vectors := make([]Vector, len(nn), len(nn))
@@ -112,7 +114,7 @@ func (a byScore) Less(i, j int) bool { return a[i].score > a[j].score }
 func (l *Lsh) knn(vector Vector, candidates []int, k int) ([]int, error) {
 	hits := make([]hit, len(candidates), len(candidates))
 	for i, id := range candidates {
-		vec := l.vectors[id]
+		vec := (*l.vectors)[id]
 		cosine, err := cosine(vector, vec)
 		if err != nil {
 			return []int{}, fmt.Errorf("error computing knn %q", err)

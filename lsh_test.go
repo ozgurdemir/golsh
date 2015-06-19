@@ -15,18 +15,18 @@ var (
 	}
 	numEmbeddings = 3
 	d             = 2
-	lsh           = newLsh(vectors, numEmbeddings, d, &r)
+	lsh           = newLsh(&vectors, numEmbeddings, d, &r)
 )
 
 func TestSize(t *testing.T) {
-	if got, expected := getSize(vectors), 3; expected != got {
+	if got, expected := getSize(&vectors), 3; expected != got {
 		t.Fatalf("expected %d but got %d", expected, got)
 	}
 }
 
 func TestNewLsh(t *testing.T) {
 	// vectors are copied
-	if got, expected := lsh.vectors, vectors; !reflect.DeepEqual(got, expected) {
+	if got, expected := *lsh.vectors, vectors; !reflect.DeepEqual(got, expected) {
 		t.Fatalf("expected %v but got %v", expected, got)
 	}
 	// correct number of embeddings
