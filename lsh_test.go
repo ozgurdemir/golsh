@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	r       = newFakeRandom([]feature{1, 2, 3})
-	vectors = map[int]vector{
-		10: []feature{-1.0, 0.0, 0.0},
-		20: []feature{0.0, 1.0, 0.0},
-		30: []feature{0.0, 0.0, 1.0},
+	r       = newFakeRandom([]float64{1, 2, 3})
+	vectors = map[int]Vector{
+		10: []float64{-1.0, 0.0, 0.0},
+		20: []float64{0.0, 1.0, 0.0},
+		30: []float64{0.0, 0.0, 1.0},
 	}
 	numEmbeddings = 3
 	d             = 2
@@ -39,7 +39,7 @@ func TestNewLsh(t *testing.T) {
 	}
 
 	// embeddings have correct normals
-	if got, expected := lsh.embeddings[0].normals[0], []feature{1, 2, 3}; !reflect.DeepEqual(got, expected) {
+	if got, expected := lsh.embeddings[0].normals[0], []float64{1, 2, 3}; !reflect.DeepEqual(got, expected) {
 		// t.Fatalf("expected %v but got %v", expected, got)
 	}
 
@@ -54,7 +54,8 @@ func TestNewLsh(t *testing.T) {
 }
 
 func TestVector(t *testing.T) {
-	if got, expected := lsh.vector(10), vectors[10]; !reflect.DeepEqual(got, expected) {
+	vector, _ := lsh.Vector(10)
+	if got, expected := vector, vectors[10]; !reflect.DeepEqual(got, expected) {
 		t.Fatalf("expected %v but got %v", expected, got)
 	}
 }
@@ -93,7 +94,7 @@ func TestSort(t *testing.T) {
 
 func TestKNN(t *testing.T) {
 	candidates := []int{10, 20, 30}
-	got, err := lsh.knn([]feature{1, 1, 1}, candidates, 2)
+	got, err := lsh.knn([]float64{1, 1, 1}, candidates, 2)
 	if err != nil {
 		t.Fatalf("error computing knn %q", err)
 	}
