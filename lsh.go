@@ -51,25 +51,8 @@ func (l *Lsh) Vector(id int) (Vector, bool) {
 	return vector, ok
 }
 
-// AnnVector returns the ann vectors
-func (l *Lsh) AnnVector(vector Vector, k int) ([]Vector, error) {
-	nn, err := l.Ann(vector, k)
-	vectors := make([]Vector, len(nn), len(nn))
-	if err != nil {
-		return vectors, err
-	}
-	for i, id := range nn {
-		result, ok := l.Vector(id)
-		if !ok {
-			return []Vector{}, fmt.Errorf("vector not found %d", id)
-		}
-		vectors[i] = result
-	}
-	return vectors, err
-}
-
 // Ann finds approximate nearest neughbour using LSH cosine
-func (l *Lsh) Ann(vector Vector, k int) ([]int, error) {
+func (l *Lsh) Ann(vector Vector, k int) ([]Hit, error) {
 	candidates := l.candidates(vector)
 	nn, err := l.knn(vector, deduplicate(candidates), k)
 	return nn, err
@@ -99,40 +82,41 @@ func deduplicate(ids []int) []int {
 	return result
 }
 
-type hit struct {
-	id     int
-	vector Vector
-	score  float64
+// Hit result for an NN
+type Hit struct {
+	ID     int
+	Vector *Vector
+	Cosine float64
 }
 
-type byScore []hit
+// ByScore sorts hits descending by score
+type ByScore []Hit
 
-func (a byScore) Len() int           { return len(a) }
-func (a byScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byScore) Less(i, j int) bool { return a[i].score > a[j].score }
+func (a ByScore) Len() int           { return len(a) }
+func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByScore) Less(i, j int) bool { return a[i].Cosine > a[j].Cosine }
 
-func (l *Lsh) knn(vector Vector, candidates []int, k int) ([]int, error) {
-	hits := make([]hit, len(candidates), len(candidates))
+func (l *Lsh) knn(vector Vector, candidates []int, k int) ([]Hit, error) {
+	hits := make([]Hit, len(candidates), len(candidates))
 	for i, id := range candidates {
 		vec := (*l.vectors)[id]
 		cosine, err := cosine(vector, vec)
 		if err != nil {
-			return []int{}, fmt.Errorf("error computing knn %q", err)
+			return []Hit{}, fmt.Errorf("error computing knn %q", err)
 		}
 
-		hits[i] = hit{id, vec, cosine}
+		hits[i] = Hit{id, &vec, cosine}
 	}
 
 	sortHits(&hits)
 
-	result := make([]int, k, k)
-	for i := 0; i < k; i++ {
-		result[i] = hits[i].id
+	if len(hits) > k {
+		hits = hits[0:k]
 	}
 
-	return result, nil
+	return hits, nil
 }
 
-func sortHits(hits *[]hit) {
-	sort.Sort(byScore(*hits))
+func sortHits(hits *[]Hit) {
+	sort.Sort(ByScore(*hits))
 }

@@ -76,16 +76,17 @@ func TestDeduplicate(t *testing.T) {
 }
 
 func TestSort(t *testing.T) {
-	hits := []hit{
-		hit{1, vectors[10], 5.0},
-		hit{1, vectors[10], 2.0},
-		hit{1, vectors[10], 4.0},
+	vec := vectors[10]
+	hits := []Hit{
+		Hit{1, &vec, 5.0},
+		Hit{1, &vec, 2.0},
+		Hit{1, &vec, 4.0},
 	}
 	sortHits(&hits)
-	sortedHits := []hit{
-		hit{1, vectors[10], 5.0},
-		hit{1, vectors[10], 4.0},
-		hit{1, vectors[10], 2.0},
+	sortedHits := []Hit{
+		Hit{1, &vec, 5.0},
+		Hit{1, &vec, 4.0},
+		Hit{1, &vec, 2.0},
 	}
 	if got, expected := hits, sortedHits; !reflect.DeepEqual(got, expected) {
 		t.Fatalf("expected %v but got %v", expected, got)
@@ -94,11 +95,15 @@ func TestSort(t *testing.T) {
 
 func TestKNN(t *testing.T) {
 	candidates := []int{10, 20, 30}
-	got, err := lsh.knn([]float64{1, 1, 1}, candidates, 2)
+	result, err := lsh.knn([]float64{1, 1, 1}, candidates, 2)
 	if err != nil {
 		t.Fatalf("error computing knn %q", err)
 	}
-	if expected := []int{20, 30}; !reflect.DeepEqual(got, expected) {
+	if got, expected := 2, len(result); got != expected {
+		t.Fatalf("expected %v but got %v", expected, got)
+	}
+
+	if got, expected := []int{20, 30}, []int{result[0].ID, result[1].ID}; !reflect.DeepEqual(got, expected) {
 		t.Fatalf("expected %v but got %v", expected, got)
 	}
 }
