@@ -52,10 +52,10 @@ func (l *Lsh) Vector(id int) (Vector, bool) {
 }
 
 // Ann finds approximate nearest neughbour using LSH cosine
-func (l *Lsh) Ann(vector Vector, k int) ([]Hit, error) {
+func (l *Lsh) Ann(vector Vector, k int) ([]Hit, int, error) {
 	candidates := l.candidates(vector)
-	nn, err := l.knn(vector, deduplicate(candidates), k)
-	return nn, err
+	hits, err := l.knn(vector, deduplicate(candidates), k)
+	return hits, len(candidates), err
 }
 
 func (l *Lsh) candidates(vec Vector) []int {
