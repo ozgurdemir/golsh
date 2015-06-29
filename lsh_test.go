@@ -43,10 +43,14 @@ func TestNewLsh(t *testing.T) {
 		// t.Fatalf("expected %v but got %v", expected, got)
 	}
 
-	// all 3 embeddings are equal and hence produce the same output
+	// all 3 embeddings are equal (1,2,3) and hence produce the same output
 	expected := map[string][]int{
-		"00": []int{10, 10, 10},
-		"11": []int{20, 20, 20, 30, 30, 30},
+		"0-00": []int{10},
+		"0-11": []int{20, 30},
+		"1-00": []int{10},
+		"1-11": []int{20, 30},
+		"2-00": []int{10},
+		"2-11": []int{20, 30},
 	}
 	if got := lsh.hash; !reflect.DeepEqual(got, expected) {
 		t.Fatalf("expected %v but got %v", expected, got)
@@ -61,7 +65,7 @@ func TestVector(t *testing.T) {
 }
 
 func TestCandidates(t *testing.T) {
-	if got, expected := lsh.candidates(vectors[10]), []int{10, 10, 10, 10, 10, 10, 10, 10, 10}; !reflect.DeepEqual(got, expected) {
+	if got, expected := lsh.candidates(vectors[10]), []int{10, 10, 10}; !reflect.DeepEqual(got, expected) {
 		t.Fatalf("expected %v but got %v", expected, got)
 	}
 }

@@ -2,6 +2,7 @@ package golsh
 
 import (
 	"bytes"
+	"fmt"
 	"math/rand"
 )
 
@@ -36,12 +37,12 @@ func normal(size int, r random) Vector {
 }
 
 // returns an embedding of size d
-func (e *embedding) embed(vector Vector) string {
+func (e *embedding) embed(id int, vector Vector) string {
 	result := make([]bool, len(e.normals), len(e.normals))
 	for i, normal := range e.normals {
 		result[i] = dimension(vector, normal)
 	}
-	return bitToString(result)
+	return fmt.Sprintf("%d-%s", id, bitToString(result))
 }
 
 func dimension(vecA Vector, vecB Vector) bool {

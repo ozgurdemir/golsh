@@ -29,8 +29,8 @@ func newLsh(vectors *map[int]Vector, numEmbeddings int, d int, r random) Lsh {
 	// embed input vectors
 	hash := make(map[string][]int)
 	for id, vector := range *vectors {
-		for _, embedding := range embeddings {
-			h := embedding.embed(vector)
+		for embedID, embedding := range embeddings {
+			h := embedding.embed(embedID, vector)
 			hash[h] = append(hash[h], id)
 		}
 	}
@@ -60,8 +60,8 @@ func (l *Lsh) Ann(vector Vector, k int) ([]Hit, int, error) {
 
 func (l *Lsh) candidates(vec Vector) []int {
 	candidates := make([]int, 0, 100)
-	for _, embedding := range l.embeddings {
-		h := embedding.embed(vec)
+	for embedID, embedding := range l.embeddings {
+		h := embedding.embed(embedID, vec)
 		candidates = append(candidates, l.hash[h]...)
 	}
 
