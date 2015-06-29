@@ -17,18 +17,18 @@ func (g *gauss) draw() float64 {
 }
 
 type embedding struct {
-	normals []Vector
+	normals [][]float64
 }
 
 func newEmbedding(d int, size int, r random) embedding {
-	normals := make([]Vector, d, d)
+	normals := make([][]float64, d, d)
 	for i := 0; i < d; i++ {
 		normals[i] = normal(size, r)
 	}
 	return embedding{normals}
 }
 
-func normal(size int, r random) Vector {
+func normal(size int, r random) []float64 {
 	result := make([]float64, size, size)
 	for i := 0; i < size; i++ {
 		result[i] = r.draw()
@@ -37,7 +37,7 @@ func normal(size int, r random) Vector {
 }
 
 // returns an embedding of size d
-func (e *embedding) embed(id int, vector Vector) string {
+func (e *embedding) embed(id int, vector []float64) string {
 	result := make([]bool, len(e.normals), len(e.normals))
 	for i, normal := range e.normals {
 		result[i] = dimension(vector, normal)
@@ -45,7 +45,7 @@ func (e *embedding) embed(id int, vector Vector) string {
 	return fmt.Sprintf("%d-%s", id, bitToString(result))
 }
 
-func dimension(vecA Vector, vecB Vector) bool {
+func dimension(vecA []float64, vecB []float64) bool {
 	dot := dot(vecA, vecB)
 	if dot > 0 {
 		return true

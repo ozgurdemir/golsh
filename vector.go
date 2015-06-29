@@ -5,11 +5,8 @@ import (
 	"math"
 )
 
-// Vector defines a mathematical vector
-type Vector []float64
-
 // cosine similarity between two vectors.
-func cosine(v1, v2 Vector) (float64, error) {
+func cosine(v1, v2 []float64) (float64, error) {
 	if len(v1) != len(v2) {
 		return 0, fmt.Errorf("vectors do not have the same dimensions")
 	}
@@ -29,7 +26,7 @@ func cosine(v1, v2 Vector) (float64, error) {
 	return similarity, nil
 }
 
-func dot(vecA Vector, vecB Vector) float64 {
+func dot(vecA, vecB []float64) float64 {
 	var dot float64
 	for i := range vecA {
 		dot += vecA[i] * vecB[i]

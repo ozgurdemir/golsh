@@ -8,7 +8,7 @@ import (
 
 var (
 	r       = newFakeRandom([]float64{1, 2, 3})
-	vectors = map[int]Vector{
+	vectors = map[int][]float64{
 		10: []float64{-1.0, 0.0, 0.0},
 		20: []float64{0.0, 1.0, 0.0},
 		30: []float64{0.0, 0.0, 1.0},

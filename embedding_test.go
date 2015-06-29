@@ -48,7 +48,7 @@ func TestNormal(t *testing.T) {
 func TestEmbed(t *testing.T) {
 	normalA := []float64{1.0, 0.0}
 	normalB := []float64{0.0, 1.0}
-	embedding := embedding{[]Vector{normalA, normalB}}
+	embedding := embedding{[][]float64{normalA, normalB}}
 	got := embedding.embed(1, []float64{1.0, 0.0})
 	if expected := "1-10"; got != expected {
 		t.Fatalf("expected %s but got %s", expected, got)
