@@ -52,9 +52,10 @@ func (l *Lsh) Vector(id int) ([]float64, bool) {
 }
 
 // Ann finds approximate nearest neughbour using LSH cosine
-func (l *Lsh) Ann(vector []float64, k int) ([]Hit, int, error) {
+func (l *Lsh) Ann(vector []float64, k int, threshold float64) ([]Hit, int, error) {
 	candidates := l.candidates(vector)
 	hits, err := l.knn(vector, deduplicate(candidates), k)
+	hits = minCosine(hits, threshold)
 	return hits, len(candidates), err
 }
 
@@ -79,6 +80,16 @@ func deduplicate(ids []int) []int {
 		result = append(result, id)
 	}
 
+	return result
+}
+
+func minCosine(hits []Hit, threshold float64) []Hit {
+	result := make([]Hit, 0, len(hits))
+	for _, hit := range hits {
+		if hit.Cosine >= threshold {
+			result = append(result, hit)
+		}
+	}
 	return result
 }
 

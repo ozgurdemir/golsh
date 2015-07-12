@@ -79,6 +79,22 @@ func TestDeduplicate(t *testing.T) {
 	}
 }
 
+func TestMinCosine(t *testing.T) {
+	vec := vectors[10]
+	hits := []Hit{
+		Hit{1, &vec, 0.1},
+		Hit{1, &vec, 0.6},
+		Hit{1, &vec, 0.8},
+	}
+	filteredHits := []Hit{
+		Hit{1, &vec, 0.6},
+		Hit{1, &vec, 0.8},
+	}
+	if got, expected := minCosine(hits, 0.6), filteredHits; !reflect.DeepEqual(got, expected) {
+		t.Fatalf("expected %v but got %v", expected, got)
+	}
+}
+
 func TestSort(t *testing.T) {
 	vec := vectors[10]
 	hits := []Hit{
