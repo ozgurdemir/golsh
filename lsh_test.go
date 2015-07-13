@@ -40,7 +40,7 @@ func TestNewLsh(t *testing.T) {
 
 	// embeddings have correct normals
 	if got, expected := lsh.embeddings[0].normals[0], []float64{1, 2, 3}; !reflect.DeepEqual(got, expected) {
-		// t.Fatalf("expected %v but got %v", expected, got)
+		t.Fatalf("expected %v but got %v", expected, got)
 	}
 
 	// all 3 embeddings are equal (1,2,3) and hence produce the same output
