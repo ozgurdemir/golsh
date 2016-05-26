@@ -25,19 +25,19 @@ The algorithm proceeds as follows:
 #Usage
 the library is initialized as follows:
 
-	golsh.NewLsh(vectors *map[int][]float64, numEmbeddings int, d int) Lsh
+	golsh.NewLsh(vectors *map[int][]float32, numEmbeddings int, d int) Lsh
 	
 **vectors** is a simple go map from an user defined int (id) to the input vectors to be searched against. This function will return an golsh.Lsh object which is used for all subsequent operations. The two parameters **numEmbeddings** and **d** controll the trade off between speed and accuracy ([see above](#algorithm)).
 
 ## Get vector based on id
 	
-	lsh.Vector(id int) ([]float64, bool)
+	lsh.Vector(id int) ([]float32, bool)
 	
 given an id will return the vector stored. This is just a convinience function and may be used if the vector to search with is part of the corpus itself.
 	
 ## Find approximate nearest neighbours
 	
-	lsh.Ann(vector []float64, k int, threshold float64) ([]Hit, int, error)
+	lsh.Ann(vector []float32, k int, threshold float32) ([]Hit, int, error)
 	
 **vector** the vector to search nearest neighbours for. **k** max number of neighbours returned. **threshold** min cosine similarity that a neighbour needs to have. This parameter is used to filter false positives.
 
@@ -46,8 +46,8 @@ the result is of type []golsh.Hit where Hit consists of:
 
 	type Hit struct {
 		ID     int
-		Vector *[]float64
-		Cosine float64
+		Vector *[]float32
+		Cosine float32
 	}
 	
 where **ID** is the id of the result vector. **Vector** is the result vector itself and **Cosine** is the exact cosine distance between the query and this result vector. The result array is sorted by similarity that is most similar vector is pos 1.

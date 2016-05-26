@@ -7,17 +7,17 @@ import (
 
 // Lsh creates a new Lsh object
 type Lsh struct {
-	vectors    *map[int][]float64
+	vectors    *map[int][]float32
 	embeddings []embedding
 	hash       map[string][]int
 }
 
 // NewLsh created a new Lsh object
-func NewLsh(vectors *map[int][]float64, numEmbeddings int, d int) Lsh {
+func NewLsh(vectors *map[int][]float32, numEmbeddings int, d int) Lsh {
 	return newLsh(vectors, numEmbeddings, d, &gauss{})
 }
 
-func newLsh(vectors *map[int][]float64, numEmbeddings int, d int, r random) Lsh {
+func newLsh(vectors *map[int][]float32, numEmbeddings int, d int, r random) Lsh {
 	size := getSize(vectors)
 
 	// create global embeddings
@@ -38,7 +38,7 @@ func newLsh(vectors *map[int][]float64, numEmbeddings int, d int, r random) Lsh 
 	return Lsh{vectors, embeddings, hash}
 }
 
-func getSize(vectors *map[int][]float64) int {
+func getSize(vectors *map[int][]float32) int {
 	for _, vector := range *vectors {
 		return len(vector)
 	}
@@ -46,20 +46,20 @@ func getSize(vectors *map[int][]float64) int {
 }
 
 // Vector fetches the vector for a given id
-func (l *Lsh) Vector(id int) ([]float64, bool) {
+func (l *Lsh) Vector(id int) ([]float32, bool) {
 	vector, ok := (*l.vectors)[id]
 	return vector, ok
 }
 
 // Ann finds approximate nearest neughbour using LSH cosine
-func (l *Lsh) Ann(vector []float64, k int, threshold float64) ([]Hit, int, error) {
+func (l *Lsh) Ann(vector []float32, k int, threshold float32) ([]Hit, int, error) {
 	candidates := l.candidates(vector)
 	hits, err := l.knn(vector, deduplicate(candidates), k)
 	hits = minCosine(hits, threshold)
 	return hits, len(candidates), err
 }
 
-func (l *Lsh) candidates(vec []float64) []int {
+func (l *Lsh) candidates(vec []float32) []int {
 	candidates := make([]int, 0, 100)
 	for embedID, embedding := range l.embeddings {
 		h := embedding.embed(embedID, vec)
@@ -83,7 +83,7 @@ func deduplicate(ids []int) []int {
 	return result
 }
 
-func minCosine(hits []Hit, threshold float64) []Hit {
+func minCosine(hits []Hit, threshold float32) []Hit {
 	result := make([]Hit, 0, len(hits))
 	for _, hit := range hits {
 		if hit.Cosine >= threshold {
@@ -96,8 +96,8 @@ func minCosine(hits []Hit, threshold float64) []Hit {
 // Hit result for an NN
 type Hit struct {
 	ID     int
-	Vector *[]float64
-	Cosine float64
+	Vector *[]float32
+	Cosine float32
 }
 
 // ByScore sorts hits descending by score
@@ -107,7 +107,7 @@ func (a ByScore) Len() int           { return len(a) }
 func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByScore) Less(i, j int) bool { return a[i].Cosine > a[j].Cosine }
 
-func (l *Lsh) knn(vector []float64, candidates []int, k int) ([]Hit, error) {
+func (l *Lsh) knn(vector []float32, candidates []int, k int) ([]Hit, error) {
 	hits := make([]Hit, len(candidates), len(candidates))
 	for i, id := range candidates {
 		vec := (*l.vectors)[id]
